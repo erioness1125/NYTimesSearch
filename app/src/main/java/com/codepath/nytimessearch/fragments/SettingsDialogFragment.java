@@ -8,14 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.codepath.nytimessearch.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -23,13 +24,13 @@ import butterknife.OnClick;
 
 public class SettingsDialogFragment extends DialogFragment implements DatePickerFragment.OnSetBeginDateListener {
 
+    @Bind(R.id.cbArts) CheckBox cbArts;
+    @Bind(R.id.cbFashionStyle) CheckBox cbFashionStyle;
+    @Bind(R.id.cbSports) CheckBox cbSports;
     @Bind(R.id.etBeginDateValue) EditText etBeginDateValue;
-    @Bind(R.id.spnrNewsDeskValue) Spinner spnrNewsDeskValue;
     @Bind(R.id.spnrSortByValue) Spinner spnrSortByValue;
-    @Bind(R.id.tvDone) TextView tvDone;
 
-    private String beginDate;
-    private String newsDesk;
+    private List<String> newsDeskList;
     private String sort;
 
     private static final int SETTINGS_REQUEST_CODE = 10;
@@ -37,11 +38,10 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
     @Override
     public void onSetBeginDate(String beginDate) {
         etBeginDateValue.setText(beginDate);
-        this.beginDate = beginDate;
     }
 
     public interface SettingsDialogListener {
-        void onDone (String beginDate, String newsDesk, String sort);
+        void onDone (String beginDate, List<String> newsDeskList, String sort);
     }
 
     public SettingsDialogFragment() {
@@ -56,12 +56,8 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
         return settingsDialogFragment;
     }
 
-    public void setBeginDate(String beginDate) {
-        this.beginDate = beginDate;
-    }
-
-    public void setNewsDesk(String newsDesk) {
-        this.newsDesk = newsDesk;
+    public void setNewsDesk(List<String> newsDeskList) {
+        this.newsDeskList = newsDeskList;
     }
 
     public void setSort(String sort) {
@@ -80,37 +76,18 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // set spinners
-        /****************************** spnrNewsDeskValue ******************************/
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> newsDeskAdapter = ArrayAdapter.createFromResource(
-                getContext(), R.array.news_desk_values, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        newsDeskAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spnrNewsDeskValue.setAdapter(newsDeskAdapter);
-        spnrNewsDeskValue.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItemStr = parent.getItemAtPosition(position).toString();
-                if (selectedItemStr.equals(getString(R.string.none)))
-                    newsDesk = "";
-                else
-                    newsDesk = parent.getItemAtPosition(position).toString();
+        /****************************** init CheckBox ******************************/
+        if (newsDeskList != null) {
+            for (String s : newsDeskList) {
+                if (s.equals(getString(R.string.arts)))
+                    cbArts.setChecked(true);
+                else if (s.equals(getString(R.string.fashion_style)))
+                    cbFashionStyle.setChecked(true);
+                else if (s.equals(getString(R.string.sports)))
+                    cbSports.setChecked(true);
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                newsDesk = "";
-            }
-        });
-        // set the persisted value if available
-        String[] arr = getResources().getStringArray(R.array.news_desk_values);
-        ArrayList<String> al = new ArrayList<>(Arrays.asList(arr));
-        int pos = al.indexOf(newsDesk);
-        if (pos != -1)
-            spnrNewsDeskValue.setSelection(pos);
-        /****************************** end of spnrNewsDeskValue ******************************/
+        }
+        /****************************** end of CheckBox ******************************/
 
         /****************************** spnrSortByValue ******************************/
         ArrayAdapter<CharSequence> sortByAdapter = ArrayAdapter.createFromResource(
@@ -133,9 +110,9 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
             }
         });
         // set the persisted value if available
-        arr = getResources().getStringArray(R.array.sort_by_values);
-        al = new ArrayList<>(Arrays.asList(arr));
-        pos = al.indexOf(sort);
+        String[] arr = getResources().getStringArray(R.array.sort_by_values);
+        List<String> al = new ArrayList<>(Arrays.asList(arr));
+        int pos = al.indexOf(sort);
         if (pos != -1)
             spnrSortByValue.setSelection(pos);
         /****************************** end of spnrSortByValue ******************************/
@@ -143,9 +120,12 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
 
     @OnClick(R.id.tvDone)
     void onDoneAction() {
+        // set newsDesk
+        getCheckedNewsDesks();
+
         // Return input text to activity
         SettingsDialogListener listener = (SettingsDialogListener) getActivity();
-        listener.onDone(beginDate, newsDesk, sort);
+        listener.onDone(etBeginDateValue.getText().toString(), newsDeskList, sort);
         dismiss();
     }
 
@@ -154,5 +134,17 @@ public class SettingsDialogFragment extends DialogFragment implements DatePicker
         DatePickerFragment datePickerFragment = new DatePickerFragment();
         datePickerFragment.setTargetFragment(this, SETTINGS_REQUEST_CODE);
         datePickerFragment.show(getActivity().getSupportFragmentManager(), "datePicker");
+    }
+
+    private void getCheckedNewsDesks() {
+        // example => news_desk:("Sports" "Foreign")
+        newsDeskList = new ArrayList<>();
+
+        if (cbArts.isChecked())
+            newsDeskList.add(getString(R.string.arts));
+        if (cbFashionStyle.isChecked())
+            newsDeskList.add(getString(R.string.fashion_style));
+        if (cbSports.isChecked())
+            newsDeskList.add(getString(R.string.sports));
     }
 }

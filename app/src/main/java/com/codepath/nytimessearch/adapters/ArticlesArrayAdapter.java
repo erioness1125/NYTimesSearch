@@ -15,36 +15,51 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class ArticlesArrayAdapter extends ArrayAdapter<Article> {
+
     public ArticlesArrayAdapter(Context context, ArrayList<Article> objects) {
-        super(context, R.layout.support_simple_spinner_dropdown_item, objects);
+        super(context, R.layout.content_main, objects);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Article article = getItem(position);
+        ViewHolder viewHolder = null;
 
         // check to see if existing view is reused
         // not using a recycled view -> inflate the layout
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.item_article_result, parent, false);
+            viewHolder = new ViewHolder(convertView);
+            convertView.setTag(viewHolder);
+        }
+        else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        // find the imageView
-        ImageView ivImage = (ImageView) convertView.findViewById(R.id.ivImage);
+        viewHolder.tvTitle.setText(article.getHeadline());
 
-        // clear out recycled image from convertView from last time
-        ivImage.setImageResource(0);
-
-        TextView tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
-        tvTitle.setText(article.getHeadline());
+        // reset image
+        viewHolder.ivImage.setImageResource(R.drawable.ic_action_pic);
 
         String thumbNail = article.getThumbNail();
         if (!TextUtils.isEmpty(thumbNail)) {
-            Picasso.with(getContext()).load(thumbNail).into(ivImage);
+            Picasso.with(getContext()).load(thumbNail).into(viewHolder.ivImage);
         }
 
         return convertView;
+    }
+
+    static class ViewHolder {
+        @Bind(R.id.ivImage) ImageView ivImage;
+        @Bind(R.id.tvTitle) TextView tvTitle;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }

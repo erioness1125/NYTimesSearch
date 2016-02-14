@@ -1,9 +1,14 @@
 <resources>
-    <string name="app_name">NYTimesSearch</string>
+    <string name="app_name">NY Times Search</string>
     <string name="action_settings">@string/settings</string>
+    <string name="nytimes_api_key">42957875e7babe802935dbba1173f6bb:19:74340387</string>
 
+    <string name="arts">Arts</string>
     <string name="begin_date">Begin Date</string>
     <string name="cancel">Cancel</string>
+    <string name="docs">docs</string>
+    <string name="done">Done</string>
+    <string name="fashion_style"><![CDATA[Fashion & Style]]></string>
     <string name="hint">Enter search query</string>
     <string name="hint_begin_date">Tap to set the date</string>
     <string name="newest">Newest</string>
@@ -11,12 +16,15 @@
     <string name="none">None</string>
     <string name="ok">Ok</string>
     <string name="oldest">Oldest</string>
-    <string name="relevance">Relevance</string>
+    <string name="response">response</string>
+    <string name="results">Results</string>
     <string name="search">Search</string>
     <string name="sections">Sections</string>
     <string name="settings">Settings</string>
     <string name="sort_by">Sort By</string>
+    <string name="sports">Sports</string>
     <string name="title_activity_article">ArticleActivity</string>
-    <string name="done">Done</string>
+    <string name="url">url</string>
+    <string name="web_url">web_url</string>
 
 </resources>

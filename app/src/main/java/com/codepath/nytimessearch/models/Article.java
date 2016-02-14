@@ -12,17 +12,29 @@ public class Article {
     private String headline;
     private String thumbNail;
 
-    public Article(JSONObject jsonObject) {
-        try {
-            this.webUrl = jsonObject.getString("web_url");
-            this.headline = jsonObject.getJSONObject("headline").getString("main");
+    private static final String HEADLINE = "headline";
+    private static final String MAIN = "main";
+    private static final String MULTIMEDIA = "multimedia";
+    private static final String URL = "url";
+    private static final String WEB_URL = "web_url";
 
-            JSONArray multimedia = jsonObject.getJSONArray("multimedia");
-            if (multimedia.length() > 0) {
-                JSONObject multimediaJson = multimedia.getJSONObject(0);
-                this.thumbNail = "http://www.nytimes.com/" + multimediaJson.getString("url");
-            }
-            else
+    public Article(JSONObject articleJson) {
+        try {
+            this.webUrl = articleJson.optString(WEB_URL);
+
+            JSONObject headLineJson = articleJson.optJSONObject(HEADLINE);
+            if (headLineJson != null)
+                this.headline = headLineJson.optString(MAIN);
+
+            JSONArray multiMediaArr = articleJson.optJSONArray(MULTIMEDIA);
+            if (multiMediaArr != null && multiMediaArr.length() > 0) {
+                JSONObject multiMediaJson = multiMediaArr.getJSONObject(0);
+                String thumbNailUrl = multiMediaJson.optString(URL);
+                if (!thumbNailUrl.trim().isEmpty())
+                    this.thumbNail = "http://www.nytimes.com/" + thumbNailUrl;
+                else
+                    this.thumbNail = "";
+            } else
                 this.thumbNail = "";
         } catch (JSONException e) {
             e.printStackTrace();
@@ -33,11 +45,9 @@ public class Article {
         ArrayList<Article> results = new ArrayList<>();
 
         for (int i = 0; i < array.length(); i++) {
-            try {
-                results.add(new Article(array.getJSONObject(i)));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JSONObject articleJson = array.optJSONObject(i);
+            if (articleJson != null)
+                results.add(new Article(articleJson));
         }
 
         return results;

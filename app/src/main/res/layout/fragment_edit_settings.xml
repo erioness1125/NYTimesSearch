@@ -61,12 +61,26 @@
         android:paddingLeft="@dimen/custom_padding"
         android:layout_marginTop="@dimen/custom_divider" />
 
-    <Spinner
+    <CheckBox
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/spnrNewsDeskValue"
-        android:spinnerMode="dropdown"
-        android:background="@android:color/background_light" />
+        android:text="@string/arts"
+        android:id="@+id/cbArts"
+        android:checked="false" />
+
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/fashion_style"
+        android:id="@+id/cbFashionStyle"
+        android:checked="false" />
+
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sports"
+        android:id="@+id/cbSports"
+        android:checked="false" />
 
     <TextView
         android:layout_width="match_parent"
