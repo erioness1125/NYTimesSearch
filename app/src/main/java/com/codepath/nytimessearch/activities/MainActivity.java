@@ -8,14 +8,14 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -40,7 +40,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
 
-    @Bind(R.id.gvResults) GridView gvResults;
+    @Bind(R.id.rvResults) RecyclerView rvResults;
     @Bind(R.id.rlError) RelativeLayout rlError;
     @Bind(R.id.tvError) TextView tvError;
     @Bind(R.id.searchToolBar) Toolbar toolBar;
@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
     private static final String Q = "q";
     private static final String SORT = "sort";
 
+    private static final int NUM_COLUMN = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,11 +75,10 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
 
     private void setupViews() {
         articles = new ArrayList<>();
-        adapter = new ArticlesArrayAdapter(this, articles);
-        gvResults.setAdapter(adapter);
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        adapter = new ArticlesArrayAdapter(articles);
+        adapter.setOnItemClickListener(new ArticlesArrayAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(View view, int position) {
                 // create an intent to display the article
                 Intent i = new Intent(getApplicationContext(), ArticleActivity.class);
                 // get the article to display
@@ -88,6 +89,12 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                 startActivity(i);
             }
         });
+        rvResults.setAdapter(adapter);
+        // First param is number of columns and second param is orientation i.e Vertical or Horizontal
+        StaggeredGridLayoutManager gridLayoutManager =
+                new StaggeredGridLayoutManager(NUM_COLUMN, StaggeredGridLayoutManager.VERTICAL);
+        // Attach the layout manager to the recycler view
+        rvResults.setLayoutManager(gridLayoutManager);
         // by default rlError is not visible
         rlError.setVisibility(View.INVISIBLE);
     }
@@ -104,11 +111,11 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!isNetworkAvailable()) {
-                    gvResults.setVisibility(View.INVISIBLE);
+                    rvResults.setVisibility(View.INVISIBLE);
                     tvError.setText("Network is not currently available!");
                     rlError.setVisibility(View.VISIBLE);
                 } else if (!isOnline()) {
-                    gvResults.setVisibility(View.INVISIBLE);
+                    rvResults.setVisibility(View.INVISIBLE);
                     tvError.setText("Device is not connected to the Internet!");
                     rlError.setVisibility(View.VISIBLE);
                 } else {
@@ -116,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                     rlError.setVisibility(View.INVISIBLE);
 
                     // make sure to show gvResults
-                    gvResults.setVisibility(View.VISIBLE);
+                    rvResults.setVisibility(View.VISIBLE);
 
                     // perform query here
                     onArticleSearch(query);
@@ -181,9 +188,12 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                 if (responseJson != null) {
                     articleJsonResults = responseJson.optJSONArray(getString(R.string.docs));
                 }
-                adapter.clear();
-                adapter.addAll(Article.fromJSONArray(articleJsonResults));
-                adapter.notifyDataSetChanged();
+
+                articles.clear();
+                if (articleJsonResults != null) {
+                    articles.addAll(Article.fromJSONArray(articleJsonResults));
+                    adapter.notifyItemRangeChanged(0, articles.size());
+                }
             }
 
             @Override

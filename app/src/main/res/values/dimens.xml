@@ -6,4 +6,5 @@
     <dimen name="custom_margin">10dp</dimen>
     <dimen name="custom_padding">@dimen/custom_margin</dimen>
     <dimen name="custom_divider">20dp</dimen>
+    <dimen name="custom_padding_article">1dp</dimen>
 </resources>
