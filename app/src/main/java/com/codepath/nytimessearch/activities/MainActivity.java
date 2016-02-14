@@ -2,20 +2,23 @@ package com.codepath.nytimessearch.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
-import com.codepath.nytimessearch.models.Article;
-import com.codepath.nytimessearch.adapters.ArticleArrayAdapter;
 import com.codepath.nytimessearch.R;
+import com.codepath.nytimessearch.adapters.ArticlesArrayAdapter;
+import com.codepath.nytimessearch.fragments.SettingsDialogFragment;
+import com.codepath.nytimessearch.models.Article;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -26,33 +29,34 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
-public class SearchActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SettingsDialogFragment.SettingsDialogListener {
 
-    private Button btnSearch;
-    private EditText etQuery;
-    private GridView gvResults;
+    @Bind(R.id.gvResults) GridView gvResults;
+    @Bind(R.id.searchToolBar) Toolbar toolBar;
 
     private ArrayList<Article> articles;
-    private ArticleArrayAdapter adapter;
+    private ArticlesArrayAdapter adapter;
+
+    private String beginDate;
+    private String newsDesk;
+    private String sort;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        setSupportActionBar(toolBar);
         setupViews();
     }
 
     private void setupViews() {
-        btnSearch = (Button) findViewById(R.id.btnSearch);
-        etQuery = (EditText) findViewById(R.id.etQuery);
-        gvResults = (GridView) findViewById(R.id.gvResults);
-
         articles = new ArrayList<>();
-        adapter = new ArticleArrayAdapter(this, articles);
+        adapter = new ArticlesArrayAdapter(this, articles);
         gvResults.setAdapter(adapter);
         gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -72,8 +76,41 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_search, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // search icon
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // perform query here
+                onArticleSearch(query);
+
+                // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
+                // see https://code.google.com/p/android/issues/detail?id=24599
+                searchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        // settings icon
+        MenuItem settingsItem = menu.findItem(R.id.action_settings);
+        settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showEditDialog();
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -83,17 +120,10 @@ public class SearchActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
-    public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
-//        Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
+    private void onArticleSearch(String query) {
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
         RequestParams params = new RequestParams();
@@ -109,11 +139,27 @@ public class SearchActivity extends AppCompatActivity {
                 try {
                     articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
                     adapter.addAll(Article.fromJSONArray(articleJsonResults));
-                    Log.d("DEBUG", articles.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    private void showEditDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        SettingsDialogFragment settingsDialogFragment = SettingsDialogFragment.newInstance();
+        settingsDialogFragment.setBeginDate(beginDate);
+        settingsDialogFragment.setNewsDesk(newsDesk);
+        settingsDialogFragment.setSort(sort);
+        settingsDialogFragment.show(fm, "fragment_edit_settings");
+    }
+
+    @Override
+    public void onDone(String beginDate, String newsDesk, String sort) {
+        Toast.makeText(this, beginDate + " " + newsDesk + " " + sort, Toast.LENGTH_LONG).show();
+        this.beginDate = beginDate;
+        this.newsDesk = newsDesk;
+        this.sort = sort;
     }
 }

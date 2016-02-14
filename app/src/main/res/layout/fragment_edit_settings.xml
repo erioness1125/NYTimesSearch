@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/custom_padding"
+    android:paddingBottom="@dimen/custom_padding">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/settings"
+            android:id="@+id/tvSettingsTitle"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="@dimen/custom_margin" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/done"
+            android:id="@+id/tvDone"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="@dimen/custom_margin"
+            android:textColor="@color/colorPrimary" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginBottom="@dimen/custom_divider" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/begin_date"
+        android:id="@+id/tvBeginDateLabel"
+        android:paddingLeft="@dimen/custom_padding" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/etBeginDateValue"
+        android:hint="@string/hint_begin_date"
+        android:paddingLeft="@dimen/custom_padding" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/news_desk"
+        android:id="@+id/tvNewsDeskLabel"
+        android:paddingLeft="@dimen/custom_padding"
+        android:layout_marginTop="@dimen/custom_divider" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spnrNewsDeskValue"
+        android:spinnerMode="dropdown"
+        android:background="@android:color/background_light" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/sort_by"
+        android:id="@+id/tvSortByLabel"
+        android:paddingLeft="@dimen/custom_padding"
+        android:layout_marginTop="@dimen/custom_divider" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spnrSortByValue"
+        android:spinnerMode="dropdown"
+        android:background="@android:color/background_light" />
+
+</LinearLayout>

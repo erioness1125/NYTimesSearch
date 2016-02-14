@@ -15,8 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class ArticleArrayAdapter extends ArrayAdapter<Article> {
-    public ArticleArrayAdapter(Context context, ArrayList<Article> objects) {
+public class ArticlesArrayAdapter extends ArrayAdapter<Article> {
+    public ArticlesArrayAdapter(Context context, ArrayList<Article> objects) {
         super(context, R.layout.support_simple_spinner_dropdown_item, objects);
     }
 
