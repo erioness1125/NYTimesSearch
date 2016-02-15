@@ -26,5 +26,6 @@
     <string name="title_activity_article">Read Article</string>
     <string name="url">url</string>
     <string name="web_url">web_url</string>
+    <string name="unset">Unset</string>
 
 </resources>

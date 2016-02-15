@@ -106,6 +106,10 @@ public class ArticlesArrayAdapter extends RecyclerView.Adapter<RecyclerView.View
             return TEXT_IMAGE; // -> ImageTextViewHolder
     }
 
+    public void clearArticles() {
+        this.articleList.clear();
+    }
+
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
     // for the item with both thumbnail(image) and title

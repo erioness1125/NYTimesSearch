@@ -12,7 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +21,7 @@ import android.widget.TextView;
 import com.codepath.nytimessearch.R;
 import com.codepath.nytimessearch.adapters.ArticlesArrayAdapter;
 import com.codepath.nytimessearch.fragments.SettingsDialogFragment;
+import com.codepath.nytimessearch.listeners.EndlessRecyclerViewScrollListener;
 import com.codepath.nytimessearch.models.Article;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
     private List<String> newsDeskList;
     private String beginDate;
     private String sort;
+    private String querySaved;
 
     // NY Times API Parameter keys
     private static final String API_KEY = "api-key";
@@ -95,6 +96,15 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                 new StaggeredGridLayoutManager(NUM_COLUMN, StaggeredGridLayoutManager.VERTICAL);
         // Attach the layout manager to the recycler view
         rvResults.setLayoutManager(gridLayoutManager);
+        // Add the scroll listener
+        rvResults.addOnScrollListener(new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to the bottom of the list
+                customLoadMoreDataFromApi(page);
+            }
+        });
         // by default rlError is not visible
         rlError.setVisibility(View.INVISIBLE);
     }
@@ -110,11 +120,10 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if (!isNetworkAvailable()) {
-                    rvResults.setVisibility(View.INVISIBLE);
-                    tvError.setText("Network is not currently available!");
-                    rlError.setVisibility(View.VISIBLE);
-                } else if (!isOnline()) {
+                // hold query
+                querySaved = query;
+
+                if (!isNetworkAvailable() || !isOnline()) {
                     rvResults.setVisibility(View.INVISIBLE);
                     tvError.setText("Device is not connected to the Internet!");
                     rlError.setVisibility(View.VISIBLE);
@@ -126,7 +135,8 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                     rvResults.setVisibility(View.VISIBLE);
 
                     // perform query here
-                    onArticleSearch(query);
+                    // this is initial REST call, so the page should be 0
+                    onArticleSearch(query, 0);
 
                     // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                     // see https://code.google.com/p/android/issues/detail?id=24599
@@ -163,12 +173,12 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
         return super.onOptionsItemSelected(item);
     }
 
-    private void onArticleSearch(String query) {
+    private void onArticleSearch(String query, final int page) {
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "http://api.nytimes.com/svc/search/v2/articlesearch.json";
         RequestParams params = new RequestParams();
         params.add(API_KEY, getString(R.string.nytimes_api_key));
-        params.add(PAGE, "0");
+        params.add(PAGE, String.valueOf(page));
         params.add(Q, query);
         // add more from settings only if exists
         if (beginDate != null && !beginDate.trim().isEmpty())
@@ -178,6 +188,11 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
             params.add(FQ, newsDeskQuery);
         if (sort != null && !sort.trim().isEmpty())
             params.add(SORT, sort.toLowerCase());
+
+        if (page == 0) {
+            articles.clear();
+            adapter.notifyDataSetChanged();
+        }
 
         client.get(url, params, new JsonHttpResponseHandler() {
             @Override
@@ -189,10 +204,16 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
                     articleJsonResults = responseJson.optJSONArray(getString(R.string.docs));
                 }
 
-                articles.clear();
-                if (articleJsonResults != null) {
-                    articles.addAll(Article.fromJSONArray(articleJsonResults));
-                    adapter.notifyItemRangeChanged(0, articles.size());
+                if (articleJsonResults != null && articleJsonResults.length() > 0) {
+                    int currentAdapterSize = adapter.getItemCount();
+
+                    articles.addAll(currentAdapterSize, Article.fromJSONArray(articleJsonResults));
+                    adapter.notifyItemRangeInserted(currentAdapterSize, articles.size() - 1);
+
+                } else {
+                    rvResults.setVisibility(View.INVISIBLE);
+                    tvError.setText("No article searched");
+                    rlError.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -203,8 +224,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.i("bug", errorResponse.toString());
-//                super.onFailure(statusCode, headers, throwable, errorResponse);
+                super.onFailure(statusCode, headers, throwable, errorResponse);
             }
         });
     }
@@ -239,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
 
-    public boolean isOnline() {
+    private boolean isOnline() {
         Runtime runtime = Runtime.getRuntime();
         try {
             Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
@@ -248,6 +268,10 @@ public class MainActivity extends AppCompatActivity implements SettingsDialogFra
         } catch (IOException e)          { e.printStackTrace(); }
         catch (InterruptedException e) { e.printStackTrace(); }
         return false;
+    }
+
+    private void customLoadMoreDataFromApi(int offset) {
+        onArticleSearch(querySaved, offset);
     }
 
     @Override

@@ -12,11 +12,15 @@
     tools:context=".activities.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rvResults"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/tvResults" />
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/results"
+        android:id="@+id/tvResults"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <!--GridView
         android:layout_width="match_parent"
@@ -28,24 +32,23 @@
         android:layout_alignParentStart="false"
         android:layout_alignParentBottom="true" /-->
 
-    <TextView
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvResults"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/results"
-        android:id="@+id/tvResults"
-        android:layout_alignParentTop="true"
+        android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/tvResults" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/tvResults"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentStart="false"
         android:id="@+id/rlError"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/tvResults">
 
         <TextView
             android:layout_width="wrap_content"
@@ -54,5 +57,6 @@
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal" />
+
     </RelativeLayout>
 </RelativeLayout>
