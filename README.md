@@ -36,7 +36,8 @@ The following **bonus** features are implemented:
 
 The following **additional** features are implemented:
 
-* [ ] List anything else that you can get done to improve the app functionality!
+List anything else that you can get done to improve the app functionality!
+* [x] Show message "No article searched" when no article with the keyword is found.
 
 ## Video Walkthrough
 
